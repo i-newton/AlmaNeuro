@@ -12,6 +12,7 @@ class LinearClassifier(base_net.BaseNet):
             for j in range(output_dim)
         ]
 
+<<<<<<< HEAD
     STEP = 0.2
 
     def learn(self, input_vecs, result_vecs, error_threshold=0.01,
@@ -19,6 +20,16 @@ class LinearClassifier(base_net.BaseNet):
         # for each output classifier we learn all examples
         for output_num in range(self.output_dim):
             for iter in range(max_iterations):
+=======
+    STEP = 0.1
+
+    def learn(self, input_vecs, result_vecs, error_threshold=0.01,
+              max_iterations=1000):
+        current_iter = 0
+        # for each output classifier we learn all examples
+        for output_num in range(self.output_dim):
+            while current_iter < max_iterations:
+>>>>>>> f1feff5b2a703dae90a726497e285d2d8c3ccf73
                 # for each target vec we need to calculate errors over all
                 # input samples
                 satisfied = True
@@ -30,14 +41,23 @@ class LinearClassifier(base_net.BaseNet):
                     # calculate actual output for sample input
                     actual = self.get_output(sample_input, output_num)
                     # compare with desired output and calculate error
+<<<<<<< HEAD
                     error = desired_output[output_num] - actual
+=======
+                    error = actual - desired_output[output_num]
+>>>>>>> f1feff5b2a703dae90a726497e285d2d8c3ccf73
                     if (error**2)/2 > error_threshold:
                         satisfied = False
                     # add error gradient for this actual output to
                     # overall gradient
                     deltas[0] += error/len(input_vecs)
+<<<<<<< HEAD
                     for k in range(self.input_dim):
                         deltas[k + 1] += sample_input[k] * error/len(input_vecs)
+=======
+                    for k in range(1, self.input_dim + 1):
+                        deltas[k] += sample_input[k] * error/len(input_vecs)
+>>>>>>> f1feff5b2a703dae90a726497e285d2d8c3ccf73
                 if satisfied:
                     break
                 else:
