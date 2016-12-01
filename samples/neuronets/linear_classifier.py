@@ -25,7 +25,7 @@ class LinearClassifier(base_net.BaseNet):
                 for sample_input, desired_output in zip(
                         input_vecs, result_vecs):
                     # calculate actual output for sample input
-                    actual = self.get_output(sample_input, output_num)
+                    actual = self._get_output(sample_input, output_num)
                     # compare with desired output and calculate error
                     error = desired_output[output_num] - actual
                     if (error*error)/2 > error_threshold:
@@ -41,11 +41,11 @@ class LinearClassifier(base_net.BaseNet):
                         self.weights[output_num][weight_num] += \
                             (self.STEP * grads[weight_num])/len(input_vecs)
 
-    def get_output(self, input_vec, vec_num):
+    def _get_output(self, input_vec, vec_num):
         return vec_utils.multiply([1] + input_vec, self.weights[vec_num])
 
     def get_results(self, input_vec):
-        return [self.get_output(input_vec, i) for i in range(self.output_dim)]
+        return [self._get_output(input_vec, i) for i in range(self.output_dim)]
 
     def clear(self):
         pass
