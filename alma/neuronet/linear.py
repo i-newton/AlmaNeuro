@@ -1,13 +1,13 @@
-import random
+from alma.net_components import activation_function
 
-from samples.neuronets import base_net
-from utils import vec_utils
+from alma.net_components import layer
+from alma.neuronet import base_net
 
 
-class LinearClassifier(base_net.BaseNet):
+class LinearPredictor(base_net.BaseNet):
     def __init__(self, input_dim, output_dim):
-        super(LinearClassifier, self).__init__(input_dim, output_dim)
-        self.weights = [[0.0 for i in range(input_dim + 1)] for j in range(output_dim)]
+        super(LinearPredictor, self).__init__(input_dim, output_dim)
+        self.layer = layer.Layer(input_num=input_dim, neuron_num=output_dim)
 
     STEP = 0.02
 
@@ -25,7 +25,7 @@ class LinearClassifier(base_net.BaseNet):
                 for sample_input, desired_output in zip(
                         input_vecs, result_vecs):
                     # calculate actual output for sample input
-                    actual = self._get_output(sample_input, output_num)
+                    actual = self.layer.get_result_for_neuron(sample_input, output_num)
                     # compare with desired output and calculate error
                     error = desired_output[output_num] - actual
                     if (error*error)/2 > error_threshold:
@@ -37,15 +37,19 @@ class LinearClassifier(base_net.BaseNet):
                 if satisfied:
                     break
                 else:
-                    for weight_num in range(self.input_dim + 1):
-                        self.weights[output_num][weight_num] += \
-                            (self.STEP * grads[weight_num])/len(input_vecs)
-
-    def _get_output(self, input_vec, vec_num):
-        return vec_utils.multiply([1] + input_vec, self.weights[vec_num])
+                    for weight_num in range(self.layer.weight_dim):
+                        w = (self.layer.get_weight(output_num, weight_num) +
+                             (self.STEP * grads[weight_num]) / len(input_vecs))
+                        self.layer.set_weight(output_num, weight_num, w)
 
     def get_results(self, input_vec):
-        return [self._get_output(input_vec, i) for i in range(self.output_dim)]
+        return self.layer.get_result(input_vec)
 
     def clear(self):
         pass
+
+
+class LinearClassifier(LinearPredictor):
+    def __init__(self, input_dim, output_dim):
+        super(LinearClassifier, self).__init__(input_dim, output_dim)
+        self.layer.activation_func = activation_function.simple_classifier

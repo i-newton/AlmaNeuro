@@ -1,4 +1,4 @@
-from samples.neuronets import base_net
+from alma.neuronet import base_net
 
 
 class MLP(base_net.BaseNet):
