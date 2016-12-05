@@ -39,8 +39,8 @@ def matrix_add(m1, m2):
     if len(m1) != len(m2):
         raise exception.SizeMustBeEqual(size1=len(m1),
                                         size2=len(m2))
-    for i in range(m1):
-        for j in range(m1[0]):
+    for i in range(len(m1)):
+        for j in range(len(m1[i])):
             m1[i][j] += m2[i][j]
 
 
@@ -49,7 +49,7 @@ def matrix_sum(m1, m2):
         raise exception.SizeMustBeEqual(size1=len(m1),
                                         size2=len(m2))
     res = []
-    for i in range(m1):
+    for i in range(len(m1)):
         res.append(vector_sum(m1[i], m2[i]))
     return res
 

@@ -13,26 +13,30 @@ class MLP(base_net.BaseNet):
         self.output_layer = layer.Layer(hidden_dim, output_dim,
                                         activation_func=activation_function.logistic_function)
 
-    LEARNING_RATE = 0.01
+    LEARNING_RATE = 0.1
 
     def learn(self, input_vecs, result_vecs, error_threshold,
               max_iterations=1000):
+        learning_rate = self.LEARNING_RATE
         for _ in range(max_iterations):
             error_rate_succeeded = True
             b_gradients = vec_util.get_matrix(self.output_layer.neuron_num,
                                               self.output_layer.weight_num)
             a_gradients = vec_util.get_matrix(self.hidden_layer.neuron_num,
                                               self.hidden_layer.weight_num)
+            sum_error = 0.0
             for sample_input, sample_output in zip(input_vecs, result_vecs):
                 hidden_output = self.hidden_layer.get_result(sample_input)
                 net_output = self.output_layer.get_result(hidden_output)
                 # calculate p
                 p = []
                 for i in range(len(net_output)):
-                    if (net_output[i] - sample_output[i])**2 > error_threshold:
-                        error_rate_succeeded = False
                     z = net_output[i]
-                    p.append((z - sample_output[i]) * z * (1 - z))
+                    error = z - sample_output[i]
+                    sum_error += (error**2)/2
+                    if error**2 > error_threshold:
+                        error_rate_succeeded = False
+                    p.append(error * z * (1 - z))
                 # calculate b gradients
                 b_sample_grads = []
                 for i in range(len(net_output)):
@@ -44,8 +48,8 @@ class MLP(base_net.BaseNet):
                 # calculate q
                 q = []
                 for i in range(self.hidden_dim):
-                    out = self.output_layer.get_weights_for_input(i)
-                    t = vec_util.vector_scalar_mult(p, out[1:])
+                    out = self.output_layer.get_weights_for_input(i + 1)
+                    t = vec_util.vector_scalar_mult(p, out)
                     t = t*hidden_output[i]*(1 - hidden_output[i])
                     q.append(t)
 
@@ -61,11 +65,15 @@ class MLP(base_net.BaseNet):
                 vec_util.matrix_add(b_gradients, b_sample_grads)
                 vec_util.matrix_add(a_gradients, a_sample_grads)
 
+            print(str(_) + '=' + str(sum_error))
+
             if error_rate_succeeded:
                 break
             else:
-                vec_util.matrix_mult_number(a_gradients, -self.LEARNING_RATE)
-                vec_util.matrix_mult_number(b_gradients, -self.LEARNING_RATE)
+                vec_util.matrix_mult_number(a_gradients,
+                                            -learning_rate/len(input_vecs))
+                vec_util.matrix_mult_number(b_gradients,
+                                            -learning_rate/len(input_vecs))
                 self.hidden_layer.add_gradient(a_gradients)
                 self.output_layer.add_gradient(b_gradients)
 

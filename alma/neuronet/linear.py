@@ -10,13 +10,13 @@ class LinearPredictor(base_net.BaseNet):
         super(LinearPredictor, self).__init__(input_dim, output_dim)
         self.layer = layer.Layer(input_num=input_dim, neuron_num=output_dim)
 
-    LEARNING_RATE = 0.02
+    LEARNING_RATE = 0.01
 
     def learn(self, input_vecs, result_vecs, error_threshold=0.01,
               max_iterations=10000):
         # for each output classifier we learn all examples
         for neuron_num in range(self.output_dim):
-            for iter in range(max_iterations):
+            for _ in range(max_iterations):
                 # for each target vec we need to calculate errors over all
                 # input samples
                 satisfied = True

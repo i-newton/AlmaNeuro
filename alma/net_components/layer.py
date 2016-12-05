@@ -5,11 +5,13 @@ from alma.util import vec_util
 
 
 class Layer:
-    def __init__(self, input_num, neuron_num, activation_func=activation_function.simple):
+    def __init__(self, input_num, neuron_num,
+                 activation_func=activation_function.simple):
         self.neuron_num = neuron_num
         self.weight_num = input_num + 1
         self.activation_func = activation_func
-        self._weights = vec_util.get_matrix(self.neuron_num, self.weight_num)
+        self._weights = vec_util.get_matrix(self.neuron_num, self.weight_num,
+                                            randomize=True)
 
     def get_result(self, input_vec):
         return [self.get_result_for_neuron(input_vec, i)
