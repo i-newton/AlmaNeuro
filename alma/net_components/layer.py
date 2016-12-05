@@ -26,3 +26,21 @@ class Layer:
 
     def set_weight(self, neuron, weight_no, value):
         self._weights[neuron][weight_no] = value
+
+    def add(self, neuron, weight_no, value):
+        self._weights[neuron][weight_no] += value
+
+    def add_weigths(self, neuron, vec):
+        for i in range(self.weight_dim):
+            self._weights[neuron][i] += vec[i]
+
+    def add_gradient(self, gradient):
+        for i in range(self.neuron_num):
+            for j in range(self.weight_dim):
+                self._weights[i][j] += gradient[i][j]
+
+    def get_inputs_for_neuron(self, neuron):
+        return self._weights[neuron]
+
+    def get_inputs_from_neuron(self, neuron):
+        return [w[neuron] for w in self._weights]
