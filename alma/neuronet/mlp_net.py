@@ -19,57 +19,55 @@ class MLP(base_net.BaseNet):
               max_iterations=1000):
         for _ in range(max_iterations):
             error_rate_succeeded = True
-            b_grad_res = []
-            a_grad_res = []
-            for input_vec, target_result in zip(input_vecs, result_vecs):
+            b_gradients = vec_util.get_matrix(self.output_layer.neuron_num,
+                                              self.output_layer.weight_num)
+            a_gradients = vec_util.get_matrix(self.hidden_layer.neuron_num,
+                                              self.hidden_layer.weight_num)
+            for sample_input, sample_output in zip(input_vecs, result_vecs):
+                hidden_output = self.hidden_layer.get_result(sample_input)
+                net_output = self.output_layer.get_result(hidden_output)
                 # calculate p
-                actual_result = self.get_results(input_vec)
                 p = []
-                for i in range(len(actual_result)):
-                    if (actual_result[i] - target_result[i])**2 > error_threshold:
+                for i in range(len(net_output)):
+                    if (net_output[i] - sample_output[i])**2 > error_threshold:
                         error_rate_succeeded = False
-                    z = actual_result[i]
-                    p.append((z - target_result[i]) * z * (1 - z))
-
-                hidden_result = self.hidden_layer.get_result(input_vec)
-                b_grads = []
+                    z = net_output[i]
+                    p.append((z - sample_output[i]) * z * (1 - z))
                 # calculate b gradients
-                for i in range(len(actual_result)):
+                b_sample_grads = []
+                for i in range(len(net_output)):
                     bi_grad = [p[i]]
-                    for y in hidden_result:
+                    for y in hidden_output:
                         bi_grad.append(p[i]*y)
-                    b_grads.append(bi_grad)
-                if b_grad_res:
-                    vec_util.sum(b_grad_res, b_grads)
-                else:
-                    b_grad_res = b_grads
+                    b_sample_grads.append(bi_grad)
+
                 # calculate q
                 q = []
                 for i in range(self.hidden_dim):
-                    out = self.output_layer.get_inputs_from_neuron(i)
-                    a = vec_util.multiply(q, out[1:])
-                    a = a*hidden_result[i]*(1 - hidden_result[i])
-                    q.append(a)
+                    out = self.output_layer.get_weights_for_input(i)
+                    t = vec_util.vector_scalar_mult(p, out[1:])
+                    t = t*hidden_output[i]*(1 - hidden_output[i])
+                    q.append(t)
 
-                a_grads = []
+                a_sample_grads = []
                 # calculate a gradients
                 for i in range(self.hidden_dim):
                     ai_grad = [q[i]]
-                    for x in input_vec:
+                    for x in sample_input:
                         ai_grad.append(q[i]*x)
-                    a_grads.append(ai_grad)
+                    a_sample_grads.append(ai_grad)
 
-                # add gradients to result gradients in epoch
-                if a_grad_res:
-                    vec_util.sum(a_grad_res, a_grads)
-                else:
-                    a_grad_res = a_grads
+                # add sample gradients to epoch
+                vec_util.matrix_add(b_gradients, b_sample_grads)
+                vec_util.matrix_add(a_gradients, a_sample_grads)
 
             if error_rate_succeeded:
                 break
             else:
-                # increase weigths according to learning weight
-                pass
+                vec_util.matrix_mult_number(a_gradients, -self.LEARNING_RATE)
+                vec_util.matrix_mult_number(b_gradients, -self.LEARNING_RATE)
+                self.hidden_layer.add_gradient(a_gradients)
+                self.output_layer.add_gradient(b_gradients)
 
     def get_results(self, input_vec):
         hidden_results = self.hidden_layer.get_result(input_vec)
