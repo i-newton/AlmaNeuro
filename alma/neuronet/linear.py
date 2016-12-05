@@ -9,7 +9,7 @@ class LinearPredictor(base_net.BaseNet):
         super(LinearPredictor, self).__init__(input_dim, output_dim)
         self.layer = layer.Layer(input_num=input_dim, neuron_num=output_dim)
 
-    STEP = 0.02
+    LEARNING_RATE = 0.02
 
     def learn(self, input_vecs, result_vecs, error_threshold=0.01,
               max_iterations=10000):
@@ -39,7 +39,7 @@ class LinearPredictor(base_net.BaseNet):
                 else:
                     for weight_num in range(self.layer.weight_dim):
                         w = (self.layer.get_weight(output_num, weight_num) +
-                             (self.STEP * grads[weight_num]) / len(input_vecs))
+                             (self.LEARNING_RATE * grads[weight_num]) / len(input_vecs))
                         self.layer.set_weight(output_num, weight_num, w)
 
     def get_results(self, input_vec):

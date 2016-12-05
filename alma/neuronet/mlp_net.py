@@ -14,7 +14,33 @@ class MLP(base_net.BaseNet):
 
     def learn(self, input_vecs, result_vecs, error_threshold,
               max_iterations=1000):
-        pass
+        for _ in range(max_iterations):
+            error_rate_succeeded = True
+            for input_vec, target_result in zip(input_vecs, result_vecs):
+                # calculate b gradients
+                actual_result = self.get_results(input_vec)
+                p = []
+                for i in range(len(actual_result)):
+                    if (actual_result[i] - target_result[i])**2 > error_threshold:
+                        error_rate_succeeded = False
+                    z = actual_result[i]
+                    p.append((z - target_result[i]) * z * (1 - z))
+
+                hidden_result = self.hidden_layer.get_result(input_vec)
+                b_grads = []
+                # calculate input gradients
+                for i in range(len(actual_result)):
+                    i_grad = [p[i]]
+                    for y in hidden_result:
+                        i_grad.append(p[i]*y)
+                    b_grads.append(i_grad)
+
+
+                # if error exceeds some value then we shouldn't stop the algorithm
+                # calculate gradient value for each of weight and add this to overall result
+                # calculate batch gradient for each value and add this to weights
+            if error_rate_succeeded:
+                break
 
     def get_results(self, input_vec):
         hidden_results = self.hidden_layer.get_result(input_vec)
